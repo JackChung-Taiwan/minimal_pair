@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phonics Flying: 聽音體感射擊</title>
+    <title>Phonics Flying: 聽音體感射擊 (修正版)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&display=swap');
@@ -11,12 +11,24 @@
         body {
             margin: 0;
             background-color: #1a1a2e;
-            /* 背景改成動態感的星空漸層 */
             background-image: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
             overflow: hidden;
             font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
             user-select: none;
         }
+        
+        /* [修正重點 1] 不要使用 display: none，改用透明度隱藏，確保串流持續運作 */
+        #video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0; 
+            z-index: -1;
+            width: 1px;
+            height: 1px;
+            pointer-events: none;
+        }
+
         canvas {
             position: absolute;
             top: 0; left: 0;
@@ -56,7 +68,7 @@
 
         #speaker-icon {
             position: absolute;
-            top: 15%; /* 移到上方比較不會擋住掉落的氣泡 */
+            top: 15%;
             left: 50%;
             transform: translate(-50%, -50%);
             font-size: 80px;
@@ -123,8 +135,6 @@
             transform: scale(1.05);
             background: #00f2fe;
         }
-
-        video { display: none; }
     </style>
 </head>
 <body>
@@ -149,7 +159,7 @@
             <p>⚡ 速度要快，氣泡會掉光喔！</p>
         </div>
         <button id="startBtn">Start Game</button>
-        <p id="loading-text" style="margin-top: 15px; font-size: 14px; color: #666;">Waiting for camera...</p>
+        <p id="loading-text" style="margin-top: 15px; font-size: 14px; color: #666; max-width: 80%;">請點擊開始，並允許攝影機權限...</p>
     </div>
 
     <video id="video" playsinline></video>
@@ -169,32 +179,30 @@
         const speakerIcon = document.getElementById('speaker-icon');
         const scoreDisplay = document.getElementById('score-display');
         const streakDisplay = document.getElementById('streak-display');
+        const loadingText = document.getElementById('loading-text');
 
         let width, height;
         let gameActive = false;
         let score = 0;
         let streak = 0;
         
-        // --- 📚 單字庫 (Minimal Pair Triplets - 三選一) ---
-        // 這些字組發音很像，挑戰性更高
         const wordTriplets = [
-            ["Cat", "Cut", "Cot"],      // æ, ʌ, ɒ
-            ["Pen", "Pan", "Pin"],      // e, æ, ɪ
-            ["Bad", "Bed", "Bud"],      // æ, e, ʌ
-            ["Sit", "Seat", "Set"],     // ɪ, iː, e
-            ["Look", "Luke", "Luck"],   // ʊ, uː, ʌ
-            ["Hat", "Hot", "Hut"],      // æ, ɒ, ʌ
-            ["Fan", "Van", "Than"],     // f, v, ð
-            ["Ship", "Sheep", "Chip"],  // ʃ, iː, tʃ
-            ["Wait", "Wet", "White"],   // eɪ, e, aɪ
-            ["Tail", "Tall", "Tell"]    // eɪ, ɔː, e
+            ["Cat", "Cut", "Cot"],      
+            ["Pen", "Pan", "Pin"],      
+            ["Bad", "Bed", "Bud"],      
+            ["Sit", "Seat", "Set"],     
+            ["Look", "Luke", "Luck"],   
+            ["Hat", "Hot", "Hut"],      
+            ["Fan", "Van", "Than"],     
+            ["Ship", "Sheep", "Chip"],  
+            ["Wait", "Wet", "White"],   
+            ["Tail", "Tall", "Tell"]    
         ];
 
         let currentTargetWord = null;
         let isSpeaking = false;
-        let canAnswer = false; // 是否允許作答 (避免聲音還沒出來就亂點)
+        let canAnswer = false; 
 
-        // --- 🔊 語音合成 ---
         function speakWord(word) {
             window.speechSynthesis.cancel();
             isSpeaking = true;
@@ -208,21 +216,19 @@
 
             utterance.onend = () => {
                 isSpeaking = false;
-                canAnswer = true; // 聲音播完才允許作答
+                canAnswer = true; 
                 speakerIcon.classList.remove('speaking');
             };
 
             window.speechSynthesis.speak(utterance);
         }
 
-        // --- 💥 粒子系統 ---
         let particles = [];
         class Particle {
             constructor(x, y, color) {
                 this.x = x; this.y = y;
                 this.color = color;
                 const angle = Math.random() * Math.PI * 2;
-                // 粒子速度加快一點，增加打擊感
                 const speed = Math.random() * 8 + 4; 
                 this.vx = Math.cos(angle) * speed;
                 this.vy = Math.sin(angle) * speed;
@@ -231,7 +237,7 @@
             }
             update() {
                 this.x += this.vx; this.y += this.vy;
-                this.vy += 0.1; // 加入一點重力
+                this.vy += 0.1; 
                 this.life -= this.decay;
             }
             draw() {
@@ -244,32 +250,24 @@
             }
         }
 
-        // --- 🎈 飛行氣泡類別 (FlyingBubble) ---
         class FlyingBubble {
             constructor(text, startX, colorTheme) {
                 this.text = text;
-                this.radius = 70; // 氣泡稍微小一點
+                this.radius = 70; 
                 this.x = startX;
-                this.y = -this.radius * 2; // 從螢幕上方外面開始
-                
-                // 隨機顏色主題 (讓畫面繽紛一點)
+                this.y = -this.radius * 2; 
                 this.colorTheme = colorTheme; 
                 this.color = colorTheme === 'blue' ? '#4facfe' : (colorTheme === 'pink' ? '#fe4f8a' : '#a64ffe');
-
-                // 下落速度
                 this.vy = Math.random() * 1.5 + 1.5; 
-                // 水平漂移
                 this.vx = (Math.random() - 0.5) * 1; 
-
                 this.pulse = Math.random() * Math.PI;
-                this.isHit = false; // 標記是否被打中
+                this.isHit = false; 
             }
 
             update() {
-                if (this.isHit) return; // 被打中就停止更新(等待刪除)
+                if (this.isHit) return; 
                 this.y += this.vy;
                 this.x += this.vx;
-                // 碰到左右邊界反彈
                 if (this.x < this.radius || this.x > width - this.radius) {
                     this.vx *= -1;
                 }
@@ -282,11 +280,9 @@
                 ctx.translate(this.x, this.y);
                 const currentRadius = this.radius + Math.sin(this.pulse) * 3;
 
-                // 發光暈
                 ctx.shadowBlur = 25;
                 ctx.shadowColor = this.color;
 
-                // 氣泡本體 (漸層感)
                 const grad = ctx.createRadialGradient(0, 0, currentRadius * 0.5, 0, 0, currentRadius);
                 grad.addColorStop(0, this.color);
                 grad.addColorStop(1, adjustColorBrightness(this.color, -30));
@@ -295,18 +291,15 @@
                 ctx.arc(0, 0, currentRadius, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // 高光
                 ctx.beginPath();
                 ctx.ellipse(-currentRadius*0.3, -currentRadius*0.3, currentRadius*0.2, currentRadius*0.1, Math.PI/4, 0, Math.PI*2);
                 ctx.fillStyle = 'rgba(255,255,255,0.4)';
                 ctx.fill();
 
-                // 邊框
                 ctx.strokeStyle = 'white';
                 ctx.lineWidth = 3;
                 ctx.stroke();
 
-                // 文字 (修正鏡像)
                 ctx.scale(-1, 1); 
                 ctx.fillStyle = 'white';
                 ctx.font = "bold 32px 'Fredoka', sans-serif";
@@ -319,13 +312,11 @@
                 ctx.restore();
             }
             
-            // 檢查是否掉出螢幕
             isOffScreen() {
                 return this.y > height + this.radius;
             }
         }
 
-        // 輔助函數：調整顏色亮度
         function adjustColorBrightness(hex, percent) {
             let r = parseInt(hex.substring(1, 3), 16);
             let g = parseInt(hex.substring(3, 5), 16);
@@ -343,6 +334,210 @@
         let bubbles = [];
         let questionTimer = null;
 
-        // --- 🎮 遊戲流程控制 ---
         function startNewQuestion() {
-            if (!gameActive
+            if (!gameActive) return;
+            const triplet = [...wordTriplets[Math.floor(Math.random() * wordTriplets.length)]];
+            currentTargetWord = triplet[Math.floor(Math.random() * 3)];
+            triplet.sort(() => Math.random() - 0.5);
+
+            bubbles = [];
+            const colors = ['blue', 'pink', 'purple'];
+            for (let i = 0; i < 3; i++) {
+                const startX = width * (0.25 * (i + 1)); 
+                bubbles.push(new FlyingBubble(triplet[i], startX, colors[i]));
+            }
+            
+            setTimeout(() => {
+                speakWord(currentTargetWord);
+            }, 500);
+
+            clearTimeout(questionTimer);
+            questionTimer = setTimeout(checkMissed, 6000); 
+        }
+
+        function checkMissed() {
+            if (bubbles.length > 0 && gameActive) {
+                streak = 0;
+                updateUI();
+                showFeedback("Missed!", width/2, height/2, '#ff5e62');
+                playSound('wrong');
+                bubbles = []; 
+                setTimeout(startNewQuestion, 1500);
+            }
+        }
+
+        function handleHit(bubble, handX, handY) {
+            if (!canAnswer || bubble.isHit) return;
+
+            bubble.isHit = true; 
+
+            if (bubble.text === currentTargetWord) {
+                createExplosion(handX, handY, '#00ffcc');
+                score += 10 + streak * 2; 
+                streak++;
+                playSound('correct');
+                showFeedback("Awesome!", handX, handY, '#00ffcc');
+                
+                clearTimeout(questionTimer);
+                setTimeout(() => {
+                    bubbles = [];
+                    setTimeout(startNewQuestion, 1000);
+                }, 500);
+
+            } else {
+                createExplosion(handX, handY, '#ff5e62');
+                streak = 0;
+                playSound('wrong');
+                showFeedback("Oops!", handX, handY, '#ff5e62');
+            }
+            updateUI();
+        }
+
+        function playSound(type) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            const actx = new AudioContext();
+            const osc = actx.createOscillator();
+            const gain = actx.createGain();
+            osc.connect(gain);
+            gain.connect(actx.destination);
+            if (type === 'correct') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(800, actx.currentTime); osc.frequency.exponentialRampToValueAtTime(1400, actx.currentTime + 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.3);
+            } else {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, actx.currentTime); osc.frequency.exponentialRampToValueAtTime(50, actx.currentTime + 0.2);
+                gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.2);
+            }
+            osc.start(); osc.stop(actx.currentTime + 0.3);
+        }
+
+        function createExplosion(x, y, color) {
+            for(let i=0; i<40; i++) particles.push(new Particle(x, y, color));
+        }
+        
+        let feedbackText = null;
+        function showFeedback(text, x, y, color) {
+            feedbackText = { x, y, text, color, life: 1.0, scale: 0.5 };
+        }
+
+        function updateUI() {
+            scoreDisplay.innerText = `Score: ${score}`;
+            streakDisplay.innerText = `Streak: ${streak}`;
+        }
+
+        function renderLoop() {
+            ctx.clearRect(0, 0, width, height);
+            
+            for (let i = bubbles.length - 1; i >= 0; i--) {
+                const b = bubbles[i];
+                b.update();
+                b.draw();
+                if (b.isOffScreen() && !b.isHit) {
+                    bubbles.splice(i, 1);
+                }
+            }
+
+            if (bubbles.length === 0 && canAnswer && gameActive) {
+                 clearTimeout(questionTimer);
+                 checkMissed();
+            }
+
+            particles.forEach((p, idx) => { p.update(); p.draw(); if (p.life <= 0) particles.splice(idx, 1); });
+
+            if (feedbackText) {
+                ctx.save();
+                ctx.translate(feedbackText.x, feedbackText.y);
+                ctx.scale(-feedbackText.scale, feedbackText.scale); 
+                feedbackText.y -= 1.5; 
+                feedbackText.life -= 0.02;
+                feedbackText.scale = Math.min(1.2, feedbackText.scale + 0.1); 
+                
+                ctx.globalAlpha = Math.max(0, feedbackText.life);
+                ctx.fillStyle = feedbackText.color;
+                ctx.font = "900 40px 'Fredoka', sans-serif";
+                ctx.textAlign = "center";
+                ctx.shadowColor = feedbackText.color;
+                ctx.shadowBlur = 15;
+                ctx.fillText(feedbackText.text, 0, 0);
+                ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.strokeText(feedbackText.text, 0, 0);
+                
+                ctx.restore();
+                if (feedbackText.life <= 0) feedbackText = null;
+            }
+        }
+
+        function onResults(results) {
+            if (!gameActive) return;
+            renderLoop(); 
+
+            if (results.multiHandLandmarks) {
+                for (const landmarks of results.multiHandLandmarks) {
+                    const indexTip = landmarks[8]; 
+                    const x = indexTip.x * width;
+                    const y = indexTip.y * height;
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, 20, 0, Math.PI*2);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(x, y, 10, 0, Math.PI*2);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                    ctx.shadowColor = '#00f2fe'; ctx.shadowBlur = 15;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+
+                    if (canAnswer) {
+                        bubbles.forEach(b => {
+                            if (b.isHit) return;
+                            const dx = x - b.x; const dy = y - b.y;
+                            const dist = Math.sqrt(dx*dx + dy*dy);
+                            if (dist < b.radius + 10) {
+                                handleHit(b, x, y);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
+        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+        hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        hands.onResults(onResults);
+
+        startBtn.addEventListener('click', async () => {
+            // [修正重點 2] 增加錯誤捕捉機制 (try-catch)
+            try {
+                if ('speechSynthesis' in window === false) { alert("不支援語音合成"); return; }
+                
+                startBtn.innerText = "Loading..."; 
+                loadingText.innerText = "正在啟動攝影機...請點擊「允許」";
+                
+                width = window.innerWidth; height = window.innerHeight;
+                canvasElement.width = width; canvasElement.height = height;
+
+                const camera = new Camera(videoElement, {
+                    onFrame: async () => { await hands.send({image: videoElement}); },
+                    width: 1280, height: 720
+                });
+                
+                await camera.start(); // 這裡可能會失敗（如果權限被拒）
+                
+                startScreen.style.opacity = 0;
+                setTimeout(() => { startScreen.style.display = 'none'; }, 500);
+                gameActive = true;
+                startNewQuestion(); 
+            } catch (error) {
+                console.error(error);
+                loadingText.innerText = "❌ 啟動失敗：請檢查攝影機權限或網址是否為 HTTPS";
+                alert("無法啟動攝影機！請確認：\n1. 您是否按下了「允許」使用攝影機。\n2. 若在電腦上測試，請確認是否為 localhost 或 https 網址。");
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            width = window.innerWidth; height = window.innerHeight;
+            canvasElement.width = width; canvasElement.height = height;
+        });
+    </script>
+</body>
+</html>
