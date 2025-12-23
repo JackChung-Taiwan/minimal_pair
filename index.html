@@ -2,30 +2,29 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phonics Flying: 聽音體感射擊 (修正版)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Phonics Flying: 兒童美語聽力遊戲</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&display=swap');
 
         body {
             margin: 0;
-            background-color: #1a1a2e;
-            background-image: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+            background-color: #87CEEB; /* 像是天空的亮藍色，更適合兒童 */
+            background-image: linear-gradient(to bottom, #87CEEB, #E0F7FA);
             overflow: hidden;
             font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
             user-select: none;
+            touch-action: none; /* 防止手機滑動刷新 */
         }
         
-        /* [修正重點 1] 不要使用 display: none，改用透明度隱藏，確保串流持續運作 */
+        /* 隱藏攝影機元素但保持運作 */
         #video {
             position: absolute;
-            top: 0;
-            left: 0;
+            top: 0; left: 0;
             opacity: 0; 
             z-index: -1;
-            width: 1px;
-            height: 1px;
+            width: 1px; height: 1px;
             pointer-events: none;
         }
 
@@ -34,6 +33,7 @@
             top: 0; left: 0;
             transform: scaleX(-1); /* 鏡像翻轉 */
         }
+
         #ui-layer {
             position: absolute;
             top: 0; left: 0;
@@ -45,25 +45,30 @@
             justify-content: space-between;
         }
         
+        /* 分數欄改為更可愛的圓角風格 */
         .hud-bar {
             margin-top: 20px;
-            background: rgba(255, 255, 255, 0.1);
+            background: #FF9800;
             padding: 10px 30px;
             border-radius: 50px;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            border: 4px solid #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             display: flex;
-            gap: 40px;
+            gap: 30px;
             color: white;
             font-size: 24px;
+            font-weight: bold;
             z-index: 10;
         }
 
         .footer-credit {
             margin-bottom: 20px;
             font-size: 16px;
-            color: rgba(255, 255, 255, 0.5);
-            font-weight: 500;
+            color: #555;
+            font-weight: 700;
+            background: rgba(255,255,255,0.6);
+            padding: 5px 15px;
+            border-radius: 20px;
         }
 
         #speaker-icon {
@@ -72,67 +77,71 @@
             left: 50%;
             transform: translate(-50%, -50%);
             font-size: 80px;
-            opacity: 0.5;
+            opacity: 0.8;
             transition: 0.2s;
-            text-shadow: 0 0 20px #fff;
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.8));
             z-index: 5;
         }
         .speaking {
-            animation: pulse-speaker 0.5s infinite alternate;
-            color: #00ffcc;
-            opacity: 1 !important;
+            animation: bounce-speaker 0.6s infinite alternate;
+            transform: translate(-50%, -50%) scale(1.2);
         }
 
-        @keyframes pulse-speaker {
-            from { transform: translate(-50%, -50%) scale(1); text-shadow: 0 0 10px #00ffcc; }
-            to { transform: translate(-50%, -50%) scale(1.2); text-shadow: 0 0 30px #00ffcc; }
+        @keyframes bounce-speaker {
+            from { transform: translate(-50%, -50%) scale(1); }
+            to { transform: translate(-50%, -50%) scale(1.2); }
         }
 
+        /* 開始畫面 - 針對手機優化 */
         #start-screen {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(26, 26, 46, 0.95);
+            background: rgba(255, 255, 255, 0.95);
             z-index: 20;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: white;
+            color: #333;
+            text-align: center;
         }
 
         h1 {
-            font-size: 60px;
+            font-size: 50px;
             margin-bottom: 5px;
-            background: linear-gradient(to right, #4facfe, #00f2fe);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 0 30px rgba(0, 242, 254, 0.3);
+            color: #FF5E62;
+            text-shadow: 2px 2px 0px #FF9966;
         }
 
         .producer-title {
-            font-size: 24px;
-            color: #ddd;
-            margin-bottom: 30px;
-            letter-spacing: 2px;
+            font-size: 20px;
+            color: #555;
+            margin-bottom: 20px;
+            font-weight: bold;
+            background: #eee;
+            padding: 5px 15px;
+            border-radius: 10px;
         }
 
         button {
-            margin-top: 30px;
-            padding: 15px 50px;
-            font-size: 24px;
+            margin-top: 20px;
+            padding: 20px 60px;
+            font-size: 28px;
             font-family: 'Fredoka', sans-serif;
+            font-weight: bold;
             background: #4facfe;
             color: white;
-            border: none;
+            border: 4px solid #fff;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.4);
             transition: 0.2s;
+            /* 讓按鈕在手機上好按 */
+            touch-action: manipulation; 
         }
-        button:hover {
-            transform: scale(1.05);
+        button:active {
+            transform: scale(0.95);
             background: #00f2fe;
         }
     </style>
@@ -141,7 +150,7 @@
 
     <div id="ui-layer">
         <div class="hud-bar">
-            <div id="score-display">Score: 0</div>
+            <div id="score-display">Coins: 0</div>
             <div id="streak-display">Streak: 0</div>
         </div>
         
@@ -153,13 +162,13 @@
     <div id="start-screen">
         <h1>Phonics Flying</h1>
         <div class="producer-title">台灣兒童美語協會製作</div>
-        <div style="margin: 20px; text-align: center; color: #aaa; font-size: 18px;">
-            <p>👂 仔細聽發音</p>
-            <p>🎈 擊破正確的飛天氣泡</p>
-            <p>⚡ 速度要快，氣泡會掉光喔！</p>
+        <div style="margin: 20px; color: #666; font-size: 18px; line-height: 1.6;">
+            <p>🎧 請打開聲音</p>
+            <p>👆 點擊開始，允許攝影機權限</p>
+            <p>🎈 用手擊破正確的單字氣泡！</p>
         </div>
-        <button id="startBtn">Start Game</button>
-        <p id="loading-text" style="margin-top: 15px; font-size: 14px; color: #666; max-width: 80%;">請點擊開始，並允許攝影機權限...</p>
+        <button id="startBtn">PLAY GAME</button>
+        <p id="loading-text" style="margin-top: 15px; font-size: 14px; color: #888;">請點擊按鈕開始...</p>
     </div>
 
     <video id="video" playsinline></video>
@@ -185,81 +194,155 @@
         let gameActive = false;
         let score = 0;
         let streak = 0;
-        
-        const wordTriplets = [
-            ["Cat", "Cut", "Cot"],      
-            ["Pen", "Pan", "Pin"],      
-            ["Bad", "Bed", "Bud"],      
-            ["Sit", "Seat", "Set"],     
-            ["Look", "Luke", "Luck"],   
-            ["Hat", "Hot", "Hut"],      
-            ["Fan", "Van", "Than"],     
-            ["Ship", "Sheep", "Chip"],  
-            ["Wait", "Wet", "White"],   
-            ["Tail", "Tall", "Tell"]    
+        let audioCtx; // Web Audio API Context
+
+        // --- 📚 單字庫 (Minimal Pairs - 兩兩一組) ---
+        const wordPairs = [
+            ["Cat", "Cut"],
+            ["Pen", "Pan"],
+            ["Bad", "Bed"],
+            ["Ship", "Sheep"],
+            ["Fan", "Van"],
+            ["Hat", "Hot"],
+            ["Walk", "Work"],
+            ["Right", "Light"],
+            ["Sing", "Thin"],
+            ["Wait", "Wet"]
         ];
+
+        // --- 🏆 鼓勵話語庫 ---
+        const correctPraises = ["Good Job!", "Excellent!", "Awesome!", "Well Done!", "Great!"];
+        const wrongEncouragements = ["Try Again!", "Keep Going!", "Don't Give Up!", "Next Time!"];
 
         let currentTargetWord = null;
         let isSpeaking = false;
         let canAnswer = false; 
 
+        // --- 🔊 語音合成 (TTS) ---
         function speakWord(word) {
             window.speechSynthesis.cancel();
             isSpeaking = true;
             canAnswer = false;
             speakerIcon.classList.add('speaking');
+            speakerIcon.innerText = "🗣️"; // 改變圖示
 
             const utterance = new SpeechSynthesisUtterance(word);
             utterance.lang = 'en-US'; 
-            utterance.rate = 0.8;     
+            utterance.rate = 0.75; // 語速適合兒童
             utterance.pitch = 1.1;    
 
             utterance.onend = () => {
                 isSpeaking = false;
                 canAnswer = true; 
                 speakerIcon.classList.remove('speaking');
+                speakerIcon.innerText = "👂"; // 恢復聆聽圖示
             };
 
             window.speechSynthesis.speak(utterance);
         }
 
+        // --- 🎵 音效系統 (使用 Web Audio API 生成，無需外部檔案) ---
+        function initAudio() {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+            
+            // 手機版修正：播放一個無聲片段來解鎖 Audio Context
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playCoinSound() {
+            if (!audioCtx) return;
+            const t = audioCtx.currentTime;
+            
+            // 第一聲 (叮)
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            osc1.connect(gain1);
+            gain1.connect(audioCtx.destination);
+            
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(1200, t); // B5
+            gain1.gain.setValueAtTime(0.1, t);
+            gain1.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
+            osc1.start(t);
+            osc1.stop(t + 0.5);
+
+            // 第二聲 (鈴) - 稍微延遲
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioCtx.destination);
+            
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(1600, t + 0.1); // E6
+            gain2.gain.setValueAtTime(0.1, t + 0.1);
+            gain2.gain.exponentialRampToValueAtTime(0.01, t + 0.8);
+            osc2.start(t + 0.1);
+            osc2.stop(t + 0.8);
+        }
+
+        function playTryAgainSound() {
+            if (!audioCtx) return;
+            const t = audioCtx.currentTime;
+            
+            // 溫柔的低音 (Womp)
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.type = 'triangle'; // 三角波比較柔和
+            osc.frequency.setValueAtTime(300, t); 
+            osc.frequency.linearRampToValueAtTime(200, t + 0.3); // 音調下降
+            
+            gain.gain.setValueAtTime(0.1, t);
+            gain.gain.linearRampToValueAtTime(0, t + 0.3);
+            
+            osc.start(t);
+            osc.stop(t + 0.3);
+        }
+
+        // --- 💥 粒子系統 ---
         let particles = [];
         class Particle {
             constructor(x, y, color) {
                 this.x = x; this.y = y;
                 this.color = color;
                 const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 8 + 4; 
+                const speed = Math.random() * 5 + 2; 
                 this.vx = Math.cos(angle) * speed;
                 this.vy = Math.sin(angle) * speed;
                 this.life = 1.0;
-                this.decay = Math.random() * 0.03 + 0.02;
+                this.decay = Math.random() * 0.05 + 0.02;
             }
             update() {
                 this.x += this.vx; this.y += this.vy;
-                this.vy += 0.1; 
+                this.vy += 0.2; // 重力
                 this.life -= this.decay;
             }
             draw() {
                 ctx.globalAlpha = Math.max(0, this.life);
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, 4, 0, Math.PI*2);
+                ctx.arc(this.x, this.y, 5, 0, Math.PI*2); // 粒子變大一點
                 ctx.fill();
                 ctx.globalAlpha = 1.0;
             }
         }
 
+        // --- 🎈 飛行氣泡 (FlyingBubble) ---
         class FlyingBubble {
             constructor(text, startX, colorTheme) {
                 this.text = text;
-                this.radius = 70; 
+                this.radius = 90; // 氣泡變大，方便兒童點擊
                 this.x = startX;
                 this.y = -this.radius * 2; 
                 this.colorTheme = colorTheme; 
-                this.color = colorTheme === 'blue' ? '#4facfe' : (colorTheme === 'pink' ? '#fe4f8a' : '#a64ffe');
-                this.vy = Math.random() * 1.5 + 1.5; 
-                this.vx = (Math.random() - 0.5) * 1; 
+                this.color = colorTheme === 'orange' ? '#FF9800' : '#4facfe'; // 橘色與藍色對比
+                this.vy = Math.random() * 1.0 + 1.2; // 速度稍慢
+                this.vx = (Math.random() - 0.5) * 0.5; 
                 this.pulse = Math.random() * Math.PI;
                 this.isHit = false; 
             }
@@ -268,9 +351,7 @@
                 if (this.isHit) return; 
                 this.y += this.vy;
                 this.x += this.vx;
-                if (this.x < this.radius || this.x > width - this.radius) {
-                    this.vx *= -1;
-                }
+                if (this.x < this.radius || this.x > width - this.radius) this.vx *= -1;
                 this.pulse += 0.05;
             }
 
@@ -280,33 +361,32 @@
                 ctx.translate(this.x, this.y);
                 const currentRadius = this.radius + Math.sin(this.pulse) * 3;
 
-                ctx.shadowBlur = 25;
+                ctx.shadowBlur = 20;
                 ctx.shadowColor = this.color;
 
-                const grad = ctx.createRadialGradient(0, 0, currentRadius * 0.5, 0, 0, currentRadius);
-                grad.addColorStop(0, this.color);
-                grad.addColorStop(1, adjustColorBrightness(this.color, -30));
-                ctx.fillStyle = grad;
+                // 卡通風格氣泡 (實色 + 高光)
+                ctx.fillStyle = this.color;
                 ctx.beginPath();
                 ctx.arc(0, 0, currentRadius, 0, Math.PI * 2);
                 ctx.fill();
                 
+                // 白色反光
                 ctx.beginPath();
-                ctx.ellipse(-currentRadius*0.3, -currentRadius*0.3, currentRadius*0.2, currentRadius*0.1, Math.PI/4, 0, Math.PI*2);
-                ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                ctx.arc(-currentRadius*0.3, -currentRadius*0.3, currentRadius*0.2, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.6)';
                 ctx.fill();
 
+                // 粗邊框
                 ctx.strokeStyle = 'white';
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 5;
                 ctx.stroke();
 
+                // 文字修正鏡像
                 ctx.scale(-1, 1); 
                 ctx.fillStyle = 'white';
-                ctx.font = "bold 32px 'Fredoka', sans-serif";
+                ctx.font = "bold 40px 'Fredoka', sans-serif";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
-                ctx.shadowBlur = 5;
-                ctx.shadowColor = 'black';
                 ctx.fillText(this.text, 0, 0);
 
                 ctx.restore();
@@ -317,50 +397,36 @@
             }
         }
 
-        function adjustColorBrightness(hex, percent) {
-            let r = parseInt(hex.substring(1, 3), 16);
-            let g = parseInt(hex.substring(3, 5), 16);
-            let b = parseInt(hex.substring(5, 7), 16);
-            r = parseInt(r * (100 + percent) / 100);
-            g = parseInt(g * (100 + percent) / 100);
-            b = parseInt(b * (100 + percent) / 100);
-            r = (r<255)?r:255; g = (g<255)?g:255; b = (b<255)?b:255;
-            const RR = ((r.toString(16).length==1)?"0"+r.toString(16):r.toString(16));
-            const GG = ((g.toString(16).length==1)?"0"+g.toString(16):g.toString(16));
-            const BB = ((b.toString(16).length==1)?"0"+b.toString(16):b.toString(16));
-            return "#"+RR+GG+BB;
-        }
-
         let bubbles = [];
         let questionTimer = null;
 
         function startNewQuestion() {
             if (!gameActive) return;
-            const triplet = [...wordTriplets[Math.floor(Math.random() * wordTriplets.length)]];
-            currentTargetWord = triplet[Math.floor(Math.random() * 3)];
-            triplet.sort(() => Math.random() - 0.5);
+            // 隨機選一組 (二選一)
+            const pair = [...wordPairs[Math.floor(Math.random() * wordPairs.length)]];
+            currentTargetWord = pair[Math.floor(Math.random() * 2)];
+            pair.sort(() => Math.random() - 0.5); // 打亂左右順序
 
             bubbles = [];
-            const colors = ['blue', 'pink', 'purple'];
-            for (let i = 0; i < 3; i++) {
-                const startX = width * (0.25 * (i + 1)); 
-                bubbles.push(new FlyingBubble(triplet[i], startX, colors[i]));
-            }
+            // 生成兩個氣泡
+            // 左邊氣泡 (30% 寬度處), 右邊氣泡 (70% 寬度處)
+            bubbles.push(new FlyingBubble(pair[0], width * 0.3, 'blue'));
+            bubbles.push(new FlyingBubble(pair[1], width * 0.7, 'orange'));
             
             setTimeout(() => {
                 speakWord(currentTargetWord);
-            }, 500);
+            }, 800);
 
             clearTimeout(questionTimer);
-            questionTimer = setTimeout(checkMissed, 6000); 
+            questionTimer = setTimeout(checkMissed, 7000); 
         }
 
         function checkMissed() {
             if (bubbles.length > 0 && gameActive) {
                 streak = 0;
                 updateUI();
-                showFeedback("Missed!", width/2, height/2, '#ff5e62');
-                playSound('wrong');
+                showFeedback("Missed!", width/2, height/2, '#9E9E9E');
+                playTryAgainSound();
                 bubbles = []; 
                 setTimeout(startNewQuestion, 1500);
             }
@@ -372,11 +438,15 @@
             bubble.isHit = true; 
 
             if (bubble.text === currentTargetWord) {
-                createExplosion(handX, handY, '#00ffcc');
-                score += 10 + streak * 2; 
+                // --- 答對 ---
+                createExplosion(handX, handY, '#FFD700'); // 金色爆炸
+                score += 10; 
                 streak++;
-                playSound('correct');
-                showFeedback("Awesome!", handX, handY, '#00ffcc');
+                playCoinSound(); // 播放金幣聲
+                
+                // 隨機選一句鼓勵語
+                const praise = correctPraises[Math.floor(Math.random() * correctPraises.length)];
+                showFeedback(praise, handX, handY, '#FFD700'); // 金色文字
                 
                 clearTimeout(questionTimer);
                 setTimeout(() => {
@@ -385,42 +455,28 @@
                 }, 500);
 
             } else {
-                createExplosion(handX, handY, '#ff5e62');
+                // --- 答錯 ---
+                createExplosion(handX, handY, '#ccc');
                 streak = 0;
-                playSound('wrong');
-                showFeedback("Oops!", handX, handY, '#ff5e62');
+                playTryAgainSound(); // 播放溫柔失敗聲
+                
+                const encourage = wrongEncouragements[Math.floor(Math.random() * wrongEncouragements.length)];
+                showFeedback(encourage, handX, handY, '#fff');
             }
             updateUI();
         }
 
-        function playSound(type) {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            const actx = new AudioContext();
-            const osc = actx.createOscillator();
-            const gain = actx.createGain();
-            osc.connect(gain);
-            gain.connect(actx.destination);
-            if (type === 'correct') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(800, actx.currentTime); osc.frequency.exponentialRampToValueAtTime(1400, actx.currentTime + 0.15);
-                gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.3);
-            } else {
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, actx.currentTime); osc.frequency.exponentialRampToValueAtTime(50, actx.currentTime + 0.2);
-                gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.2);
-            }
-            osc.start(); osc.stop(actx.currentTime + 0.3);
-        }
-
         function createExplosion(x, y, color) {
-            for(let i=0; i<40; i++) particles.push(new Particle(x, y, color));
+            for(let i=0; i<30; i++) particles.push(new Particle(x, y, color));
         }
         
         let feedbackText = null;
         function showFeedback(text, x, y, color) {
-            feedbackText = { x, y, text, color, life: 1.0, scale: 0.5 };
+            feedbackText = { x, y, text, color, life: 1.5, scale: 0.5 };
         }
 
         function updateUI() {
-            scoreDisplay.innerText = `Score: ${score}`;
+            scoreDisplay.innerText = `Coins: ${score}`;
             streakDisplay.innerText = `Streak: ${streak}`;
         }
 
@@ -447,18 +503,21 @@
                 ctx.save();
                 ctx.translate(feedbackText.x, feedbackText.y);
                 ctx.scale(-feedbackText.scale, feedbackText.scale); 
-                feedbackText.y -= 1.5; 
-                feedbackText.life -= 0.02;
+                feedbackText.y -= 2; 
+                feedbackText.life -= 0.015;
                 feedbackText.scale = Math.min(1.2, feedbackText.scale + 0.1); 
                 
                 ctx.globalAlpha = Math.max(0, feedbackText.life);
-                ctx.fillStyle = feedbackText.color;
-                ctx.font = "900 40px 'Fredoka', sans-serif";
+                // 文字描邊效果
+                ctx.font = "900 45px 'Fredoka', sans-serif";
                 ctx.textAlign = "center";
-                ctx.shadowColor = feedbackText.color;
-                ctx.shadowBlur = 15;
+                ctx.lineJoin = "round";
+                ctx.lineWidth = 6;
+                ctx.strokeStyle = "black";
+                ctx.strokeText(feedbackText.text, 0, 0);
+                
+                ctx.fillStyle = feedbackText.color;
                 ctx.fillText(feedbackText.text, 0, 0);
-                ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.strokeText(feedbackText.text, 0, 0);
                 
                 ctx.restore();
                 if (feedbackText.life <= 0) feedbackText = null;
@@ -475,24 +534,25 @@
                     const x = indexTip.x * width;
                     const y = indexTip.y * height;
 
+                    // 可愛的手指游標 (星星)
+                    ctx.save();
+                    ctx.translate(x, y);
                     ctx.beginPath();
-                    ctx.arc(x, y, 20, 0, Math.PI*2);
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
-                    ctx.beginPath();
-                    ctx.arc(x, y, 10, 0, Math.PI*2);
+                    // 畫一個簡單的圓圈游標，比較不會遮擋視線
+                    ctx.arc(0, 0, 15, 0, Math.PI*2);
                     ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                    ctx.shadowColor = '#00f2fe'; ctx.shadowBlur = 15;
                     ctx.fill();
-                    ctx.shadowBlur = 0;
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = '#FF4081';
+                    ctx.stroke();
+                    ctx.restore();
 
                     if (canAnswer) {
                         bubbles.forEach(b => {
                             if (b.isHit) return;
                             const dx = x - b.x; const dy = y - b.y;
                             const dist = Math.sqrt(dx*dx + dy*dy);
-                            if (dist < b.radius + 10) {
+                            if (dist < b.radius + 20) { // 增加一點判定範圍
                                 handleHit(b, x, y);
                             }
                         });
@@ -502,14 +562,17 @@
         }
 
         const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-        hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        hands.setOptions({ maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
         hands.onResults(onResults);
 
         startBtn.addEventListener('click', async () => {
-            // [修正重點 2] 增加錯誤捕捉機制 (try-catch)
             try {
-                if ('speechSynthesis' in window === false) { alert("不支援語音合成"); return; }
-                
+                // 手機聲音修復：強制播放一段無聲音訊來解鎖 Context
+                initAudio();
+                // 手機聲音修復：強制觸發一次 Speech API
+                const dummy = new SpeechSynthesisUtterance("");
+                window.speechSynthesis.speak(dummy);
+
                 startBtn.innerText = "Loading..."; 
                 loadingText.innerText = "正在啟動攝影機...請點擊「允許」";
                 
@@ -521,7 +584,7 @@
                     width: 1280, height: 720
                 });
                 
-                await camera.start(); // 這裡可能會失敗（如果權限被拒）
+                await camera.start();
                 
                 startScreen.style.opacity = 0;
                 setTimeout(() => { startScreen.style.display = 'none'; }, 500);
@@ -529,8 +592,8 @@
                 startNewQuestion(); 
             } catch (error) {
                 console.error(error);
-                loadingText.innerText = "❌ 啟動失敗：請檢查攝影機權限或網址是否為 HTTPS";
-                alert("無法啟動攝影機！請確認：\n1. 您是否按下了「允許」使用攝影機。\n2. 若在電腦上測試，請確認是否為 localhost 或 https 網址。");
+                loadingText.innerText = "❌ 啟動失敗";
+                alert("無法啟動攝影機！請確認使用 HTTPS 或 localhost。");
             }
         });
 
