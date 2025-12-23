@@ -460,24 +460,55 @@
             }
         }
 
-        // --- 🌟 繪製可愛魔法棒游標 ---
+        // --- 🌟 繪製「加強版」可愛魔法棒游標 ---
         function drawMagicWand(x, y) {
             ctx.save();
             ctx.translate(x, y);
-            // 棒身
-            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(20, 20);
-            ctx.lineWidth = 8; ctx.strokeStyle = '#FFD1DC'; ctx.lineCap = 'round'; ctx.stroke();
-            // 星星尖端
+
+            // 1. 強烈的外發光效果 (Glow)
+            ctx.shadowBlur = 35;
+            ctx.shadowColor = '#FFD700'; // 金色光暈
+            
+            // 2. 棒身 (加粗、變長)
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(35, 35);
+            ctx.lineWidth = 14; 
+            ctx.strokeStyle = '#FF6B81'; // 深粉紅色
+            ctx.lineCap = 'round'; 
+            ctx.stroke();
+
+            // 3. 星星本體 (放大)
             ctx.beginPath();
+            const outerRadius = 45; // 外徑放大
+            const innerRadius = 22; // 內徑放大
             for (let i = 0; i < 5; i++) {
-                ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * 25, Math.sin((18 + i * 72) * Math.PI / 180) * 25);
-                ctx.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * 12, Math.sin((54 + i * 72) * Math.PI / 180) * 12);
+                ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * outerRadius, Math.sin((18 + i * 72) * Math.PI / 180) * outerRadius);
+                ctx.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * innerRadius, Math.sin((54 + i * 72) * Math.PI / 180) * innerRadius);
             }
             ctx.closePath();
-            ctx.fillStyle = '#FFFF99'; ctx.shadowColor = '#FFFF99'; ctx.shadowBlur = 20; ctx.fill();
-            ctx.lineWidth = 3; ctx.strokeStyle = '#FFD700'; ctx.stroke();
-            // 星星中間的光點
-            ctx.beginPath(); ctx.arc(0,0, 8, 0, Math.PI*2); ctx.fillStyle="#fff"; ctx.fill();
+            
+            // 鮮豔的填充與邊框
+            ctx.fillStyle = '#FFFF00'; // 亮黃色
+            ctx.fill();
+            ctx.shadowBlur = 0; // 邊框不模糊，保持清晰
+            ctx.lineWidth = 6; 
+            ctx.strokeStyle = '#FF8C00'; // 深橘色邊框
+            ctx.stroke();
+            
+            // 4. 星星中間的光點
+            ctx.beginPath(); ctx.arc(0,0, 12, 0, Math.PI*2); ctx.fillStyle="#fff"; ctx.fill();
+
+            // 5. 動態環繞小光點 (Magic Effect)
+            const time = Date.now() / 300;
+            for(let j=0; j<3; j++) {
+                const angle = time + (j * (Math.PI * 2 / 3));
+                const rx = Math.cos(angle) * 35;
+                const ry = Math.sin(angle) * 35;
+                ctx.beginPath();
+                ctx.arc(rx, ry, 6, 0, Math.PI*2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${0.5 + Math.sin(time*2)*0.5})`; // 閃爍
+                ctx.fill();
+            }
+
             ctx.restore();
         }
 
@@ -496,7 +527,8 @@
                             if (b.isHit) return;
                             const dx = x - b.x; const dy = y - b.y;
                             const dist = Math.sqrt(dx*dx + dy*dy);
-                            if (dist < b.radius + 15) handleHit(b, x, y);
+                            // 碰撞範圍稍微加大以配合放大的魔法棒
+                            if (dist < b.radius + 30) handleHit(b, x, y);
                         });
                     }
                 }
