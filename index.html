@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Phonics Flying: Ace English x 翊華教育</title>
+    <title>Phonics Flying: 台灣兒童美語協會製作</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&display=swap');
@@ -79,16 +79,11 @@
         }
 
         .producer-title {
-            font-size: 28px; color: #fff; margin-bottom: 10px; font-weight: bold;
-            background: #87CEEB; padding: 10px 40px; border-radius: 50px;
+            font-size: 24px; color: #fff; margin-bottom: 30px; font-weight: bold;
+            background: #87CEEB; padding: 12px 40px; border-radius: 50px;
             border: 4px solid #fff; box-shadow: 0 5px 0 rgba(0,0,0,0.1);
             text-align: center;
             letter-spacing: 1px;
-        }
-
-        .sub-producer-title {
-            font-size: 20px; color: #888; margin-bottom: 30px;
-            font-weight: 700; letter-spacing: 2px;
         }
 
         button {
@@ -120,10 +115,7 @@
         <h1>Phonics Adventure</h1>
         
         <div class="producer-title">
-            Ace English
-        </div>
-        <div class="sub-producer-title">
-            翊華教育AI數位教材
+            台灣兒童美語協會製作
         </div>
 
         <div style="margin: 15px; background: #fff; padding: 20px; border-radius: 30px; border: 4px solid #FFB6C1; color: #666; font-size: 20px; font-weight: 600;">
@@ -287,14 +279,13 @@
                 this.text = text;
                 this.radius = 95; 
                 this.x = startX;
-                // [修改] 初始位置：稍微露出頂端 (radius 的 20%)，避免一開始完全看不見
-                this.y = -this.radius * 0.8; 
+                // 初始位置貼近螢幕上方
+                this.y = -this.radius * 0.5; 
                 
                 this.mainColor = colorTheme === 'blue' ? '#87CEEB' : '#FFB6C1'; 
                 this.highlightColor = colorTheme === 'blue' ? '#AEEEEE' : '#FFD1DC';
                 
-                // [修改] 速度計算：確保大約 6 秒 (360 frames) 到達底部
-                // 距離 = height + radius
+                // 動態速度計算：確保大約 6 秒飄到底部
                 const framesToFall = 360; // 60fps * 6s
                 const distance = height + this.radius * 1.5;
                 this.vy = distance / framesToFall; 
@@ -349,12 +340,12 @@
 
                 ctx.restore();
             }
-            // 檢查是否掉到底部 (接近底部就算)
+            // 檢查是否接近底部 (觸發下一題的時機)
             checkBottom() { return this.y > height - this.radius - 50; }
         }
 
         let bubbles = [];
-        let questionTimer = null; // 用於重置標記
+        let isSwitching = false; 
 
         function startNewQuestion() {
             if (!gameActive) return;
@@ -366,10 +357,8 @@
             bubbles.push(new FlyingBubble(pair[1], width * 0.7, 'pink'));
             setTimeout(() => { speakWord(currentTargetWord); }, 800);
             
-            // 這裡不再使用 setTimeout 來判斷 Missed，而是交給 renderLoop 的位置判定
+            isSwitching = false;
         }
-
-        let isSwitching = false; // 防止重複觸發切換
 
         function checkMissed() {
             if (gameActive && !isSwitching) {
@@ -379,7 +368,6 @@
                 playTryAgainSound();
                 setTimeout(() => { 
                     bubbles = []; 
-                    isSwitching = false;
                     startNewQuestion(); 
                 }, 1500);
             }
@@ -399,7 +387,6 @@
                 isSwitching = true;
                 setTimeout(() => { 
                     bubbles = []; 
-                    isSwitching = false;
                     startNewQuestion(); 
                 }, 1000);
             } else {
@@ -436,13 +423,12 @@
                 b.update(); 
                 b.draw();
                 
-                // [修改] 檢查是否觸底
                 if (b.checkBottom() && !b.isHit) {
                     anyBubbleReachedBottom = true;
                 }
             }
 
-            // 如果氣泡觸底且尚未作答，觸發 Missed
+            // 物理位置判定：氣泡觸底則下一題
             if (anyBubbleReachedBottom && !isSwitching && gameActive) {
                 checkMissed();
             }
