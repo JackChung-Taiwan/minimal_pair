@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Phonics Flying: Ace English x 翊華教育</title>
+    <title>Phonics Flying: 台灣兒童美語協會製作</title>
     <style>
         /* 引入可愛圓潤的字體 */
         @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
@@ -52,10 +52,11 @@
 
         /* 遊戲中底部的製作單位文字 */
         .footer-credit {
-            margin-bottom: 20px; font-size: 18px; color: #FF6B81; font-weight: 700;
-            background: rgba(255,255,255,0.8); padding: 8px 25px; border-radius: 30px;
+            margin-bottom: 20px; font-size: 22px; color: #FF6B81; font-weight: 700;
+            background: rgba(255,255,255,0.9); padding: 10px 30px; border-radius: 30px;
             box-shadow: 0 4px 0 rgba(0,0,0,0.1);
             text-align: center;
+            letter-spacing: 1px;
         }
 
         #speaker-icon {
@@ -82,19 +83,13 @@
             font-weight: 900;
         }
 
-        /* Ace English 標題樣式 */
+        /* 製作單位標題樣式 */
         .producer-title {
-            font-size: 28px; color: #fff; margin-bottom: 10px; font-weight: bold;
+            font-size: 28px; color: #fff; margin-bottom: 30px; font-weight: bold;
             background: #87CEEB; padding: 10px 40px; border-radius: 50px;
             border: 4px solid #fff; box-shadow: 0 5px 0 rgba(0,0,0,0.1);
             text-align: center;
             letter-spacing: 1px;
-        }
-
-        /* 翊華教育 副標題樣式 */
-        .sub-producer-title {
-            font-size: 20px; color: #888; margin-bottom: 30px;
-            font-weight: 700; letter-spacing: 2px;
         }
 
         /* 棉花糖按鈕 */
@@ -119,7 +114,7 @@
         <div id="speaker-icon">🔊</div>
 
         <div class="footer-credit">
-            翊華教育AI數位教材
+            台灣兒童美語協會製作
         </div>
     </div>
 
@@ -127,11 +122,7 @@
         <h1>Phonics Adventure</h1>
         
         <div class="producer-title">
-            Ace English
-        </div>
-        
-        <div class="sub-producer-title">
-            翊華教育AI數位教材
+            台灣兒童美語協會製作
         </div>
 
         <div style="margin: 15px; background: #fff; padding: 20px; border-radius: 30px; border: 4px solid #FFB6C1; color: #666; font-size: 20px; font-weight: 600;">
@@ -313,15 +304,13 @@
                 this.text = text;
                 this.radius = 95; 
                 this.x = startX;
-                
-                // [修改] 初始位置下降一點 (原本是 -2*radius)
+                // 初始位置貼近螢幕上方
                 this.y = -this.radius; 
                 
                 this.mainColor = colorTheme === 'blue' ? '#87CEEB' : '#FFB6C1'; 
                 this.highlightColor = colorTheme === 'blue' ? '#AEEEEE' : '#FFD1DC';
                 
-                // [修改] 調整速度配合 6秒 降落
-                // 假設螢幕高約800px，6秒=360fps，速度約2-2.5
+                // 下落速度 (配合 6秒 降落)
                 this.vy = Math.random() * 0.5 + 2.0; 
                 
                 this.vx = (Math.random() - 0.5) * 0.8; 
@@ -391,7 +380,7 @@
             setTimeout(() => { speakWord(currentTargetWord); }, 800);
             
             clearTimeout(questionTimer);
-            // [修改] 配合 6秒左右 的下落，給予 7秒 的時間緩衝
+            // 7秒等待時間 (配合氣泡降落速度)
             questionTimer = setTimeout(checkMissed, 7000); 
         }
 
@@ -531,7 +520,7 @@
                             if (b.isHit) return;
                             const dx = x - b.x; const dy = y - b.y;
                             const dist = Math.sqrt(dx*dx + dy*dy);
-                            // [修改] 判定範圍加大至 radius + 40 (因為魔法棒變大了)
+                            // 判定範圍加大至 radius + 40 (因為魔法棒變大了)
                             if (dist < b.radius + 40) handleHit(b, x, y);
                         });
                     }
