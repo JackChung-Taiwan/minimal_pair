@@ -264,7 +264,6 @@
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
             
-            // 使用木琴感的正弦波/三角波混合
             osc.type = 'triangle'; 
             osc.frequency.setValueAtTime(330, t); // E4
             osc.frequency.linearRampToValueAtTime(196, t + 0.4); // G3
@@ -319,7 +318,8 @@
                 this.y = -this.radius * 2; 
                 this.mainColor = colorTheme === 'blue' ? '#87CEEB' : '#FFB6C1'; 
                 this.highlightColor = colorTheme === 'blue' ? '#AEEEEE' : '#FFD1DC';
-                this.vy = Math.random() * 1.2 + 1.0; 
+                // [修改] 加快下落速度 (原本是 1.2+1.0，現在改為 2.5+2.0)
+                this.vy = Math.random() * 2.5 + 2.0; 
                 this.vx = (Math.random() - 0.5) * 0.8; 
                 this.pulse = Math.random() * Math.PI;
                 this.wobble = Math.random() * Math.PI; 
@@ -385,8 +385,10 @@
             bubbles.push(new FlyingBubble(pair[0], width * 0.3, 'blue'));
             bubbles.push(new FlyingBubble(pair[1], width * 0.7, 'pink'));
             setTimeout(() => { speakWord(currentTargetWord); }, 800);
+            
             clearTimeout(questionTimer);
-            questionTimer = setTimeout(checkMissed, 8000); 
+            // [修改] 縮短時間限制為 5000ms (5秒)
+            questionTimer = setTimeout(checkMissed, 5000); 
         }
 
         function checkMissed() {
@@ -460,44 +462,38 @@
             }
         }
 
-        // --- 🌟 繪製「加強版」可愛魔法棒游標 ---
+        // --- 🌟 繪製可愛魔法棒游標 ---
         function drawMagicWand(x, y) {
             ctx.save();
             ctx.translate(x, y);
 
-            // 1. 強烈的外發光效果 (Glow)
             ctx.shadowBlur = 35;
-            ctx.shadowColor = '#FFD700'; // 金色光暈
+            ctx.shadowColor = '#FFD700'; 
             
-            // 2. 棒身 (加粗、變長)
             ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(35, 35);
             ctx.lineWidth = 14; 
-            ctx.strokeStyle = '#FF6B81'; // 深粉紅色
+            ctx.strokeStyle = '#FF6B81'; 
             ctx.lineCap = 'round'; 
             ctx.stroke();
 
-            // 3. 星星本體 (放大)
             ctx.beginPath();
-            const outerRadius = 45; // 外徑放大
-            const innerRadius = 22; // 內徑放大
+            const outerRadius = 45; 
+            const innerRadius = 22; 
             for (let i = 0; i < 5; i++) {
                 ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * outerRadius, Math.sin((18 + i * 72) * Math.PI / 180) * outerRadius);
                 ctx.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * innerRadius, Math.sin((54 + i * 72) * Math.PI / 180) * innerRadius);
             }
             ctx.closePath();
             
-            // 鮮豔的填充與邊框
-            ctx.fillStyle = '#FFFF00'; // 亮黃色
+            ctx.fillStyle = '#FFFF00'; 
             ctx.fill();
-            ctx.shadowBlur = 0; // 邊框不模糊，保持清晰
+            ctx.shadowBlur = 0; 
             ctx.lineWidth = 6; 
-            ctx.strokeStyle = '#FF8C00'; // 深橘色邊框
+            ctx.strokeStyle = '#FF8C00'; 
             ctx.stroke();
             
-            // 4. 星星中間的光點
             ctx.beginPath(); ctx.arc(0,0, 12, 0, Math.PI*2); ctx.fillStyle="#fff"; ctx.fill();
 
-            // 5. 動態環繞小光點 (Magic Effect)
             const time = Date.now() / 300;
             for(let j=0; j<3; j++) {
                 const angle = time + (j * (Math.PI * 2 / 3));
@@ -505,7 +501,7 @@
                 const ry = Math.sin(angle) * 35;
                 ctx.beginPath();
                 ctx.arc(rx, ry, 6, 0, Math.PI*2);
-                ctx.fillStyle = `rgba(255, 255, 255, ${0.5 + Math.sin(time*2)*0.5})`; // 閃爍
+                ctx.fillStyle = `rgba(255, 255, 255, ${0.5 + Math.sin(time*2)*0.5})`; 
                 ctx.fill();
             }
 
@@ -527,7 +523,6 @@
                             if (b.isHit) return;
                             const dx = x - b.x; const dy = y - b.y;
                             const dist = Math.sqrt(dx*dx + dy*dy);
-                            // 碰撞範圍稍微加大以配合放大的魔法棒
                             if (dist < b.radius + 30) handleHit(b, x, y);
                         });
                     }
