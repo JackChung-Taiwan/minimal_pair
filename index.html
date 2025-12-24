@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Phonics Flying: 聽力大挑戰</title>
+    <title>Phonics Flying: Ace English x 翊華教育</title>
     <style>
         /* 引入可愛圓潤的字體 */
         @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
@@ -50,18 +50,12 @@
             z-index: 10;
         }
 
+        /* 遊戲中底部的製作單位文字 */
         .footer-credit {
             margin-bottom: 20px; font-size: 18px; color: #FF6B81; font-weight: 700;
-            background: rgba(255,255,255,0.8); padding: 8px 20px; border-radius: 30px;
+            background: rgba(255,255,255,0.8); padding: 8px 25px; border-radius: 30px;
             box-shadow: 0 4px 0 rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            gap: 10px; 
-        }
-
-        .footer-logo {
-            height: 40px;
-            width: auto;
+            text-align: center;
         }
 
         #speaker-icon {
@@ -88,23 +82,24 @@
             font-weight: 900;
         }
 
+        /* Ace English 標題樣式 */
         .producer-title {
-            font-size: 22px; color: #fff; margin-bottom: 25px; font-weight: bold;
-            background: #87CEEB; padding: 8px 25px; border-radius: 20px;
-            border: 3px solid #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-size: 28px; color: #fff; margin-bottom: 10px; font-weight: bold;
+            background: #87CEEB; padding: 10px 40px; border-radius: 50px;
+            border: 4px solid #fff; box-shadow: 0 5px 0 rgba(0,0,0,0.1);
+            text-align: center;
+            letter-spacing: 1px;
         }
 
-        .producer-logo {
-            height: 45px;
-            width: auto;
+        /* 翊華教育 副標題樣式 */
+        .sub-producer-title {
+            font-size: 20px; color: #888; margin-bottom: 30px;
+            font-weight: 700; letter-spacing: 2px;
         }
 
         /* 棉花糖按鈕 */
         button {
-            margin-top: 25px; padding: 20px 70px; font-size: 32px; font-family: 'Fredoka', sans-serif; font-weight: 900;
+            margin-top: 20px; padding: 20px 70px; font-size: 32px; font-family: 'Fredoka', sans-serif; font-weight: 900;
             background: linear-gradient(to bottom, #AEEEEE, #87CEEB);
             color: white; border: 5px solid #fff; border-radius: 60px;
             cursor: pointer; box-shadow: 0 10px 0 #6FB7D6, 0 15px 20px rgba(0,0,0,0.2);
@@ -124,18 +119,22 @@
         <div id="speaker-icon">🔊</div>
 
         <div class="footer-credit">
-            <img src="image_3.png" alt="Logo" class="footer-logo">
-            台灣兒童美語協會製作
+            翊華教育AI數位教材
         </div>
     </div>
 
     <div id="start-screen">
         <h1>Phonics Adventure</h1>
+        
         <div class="producer-title">
-            <img src="image_3.png" alt="Logo" class="producer-logo">
-            台灣兒童美語協會製作
+            Ace English
         </div>
-        <div style="margin: 20px; background: #fff; padding: 20px; border-radius: 30px; border: 4px solid #FFB6C1; color: #666; font-size: 20px; font-weight: 600;">
+        
+        <div class="sub-producer-title">
+            翊華教育AI數位教材
+        </div>
+
+        <div style="margin: 15px; background: #fff; padding: 20px; border-radius: 30px; border: 4px solid #FFB6C1; color: #666; font-size: 20px; font-weight: 600;">
             <p>🎧 請打開聲音</p>
             <p>🎈 用「星星棒」戳破正確的單字！</p>
         </div>
@@ -169,7 +168,6 @@
         let audioCtx;
 
         // --- 📚 Minimal Pairs 完整題庫 ---
-        // 包含短母音、長母音、雙母音等對比
         const wordPairs = [
             // 🟢 短母音 vs 短母音
             ["Bit", "Bet"], ["Bit", "Bat"], ["Bet", "Bat"], 
@@ -318,8 +316,11 @@
                 this.y = -this.radius * 2; 
                 this.mainColor = colorTheme === 'blue' ? '#87CEEB' : '#FFB6C1'; 
                 this.highlightColor = colorTheme === 'blue' ? '#AEEEEE' : '#FFD1DC';
-                // [修改] 加快下落速度 (原本是 1.2+1.0，現在改為 2.5+2.0)
-                this.vy = Math.random() * 2.5 + 2.0; 
+                
+                // [修改] 讓氣泡飄得更慢 (為了配合 12秒 時間)
+                // 速度範圍改為 0.5 ~ 1.0，這樣大約需要 8-12 秒才會掉出螢幕
+                this.vy = Math.random() * 0.5 + 0.5; 
+                
                 this.vx = (Math.random() - 0.5) * 0.8; 
                 this.pulse = Math.random() * Math.PI;
                 this.wobble = Math.random() * Math.PI; 
@@ -387,8 +388,8 @@
             setTimeout(() => { speakWord(currentTargetWord); }, 800);
             
             clearTimeout(questionTimer);
-            // [修改] 縮短時間限制為 5000ms (5秒)
-            questionTimer = setTimeout(checkMissed, 5000); 
+            // [修改] 將時間改為 12000 毫秒 (12秒)
+            questionTimer = setTimeout(checkMissed, 12000); 
         }
 
         function checkMissed() {
@@ -462,20 +463,23 @@
             }
         }
 
-        // --- 🌟 繪製可愛魔法棒游標 ---
+        // --- 🌟 繪製「加強版」可愛魔法棒游標 ---
         function drawMagicWand(x, y) {
             ctx.save();
             ctx.translate(x, y);
 
+            // 1. 強烈的外發光效果 (Glow)
             ctx.shadowBlur = 35;
             ctx.shadowColor = '#FFD700'; 
             
+            // 2. 棒身 (加粗、深粉紅)
             ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(35, 35);
             ctx.lineWidth = 14; 
             ctx.strokeStyle = '#FF6B81'; 
             ctx.lineCap = 'round'; 
             ctx.stroke();
 
+            // 3. 星星本體 (放大)
             ctx.beginPath();
             const outerRadius = 45; 
             const innerRadius = 22; 
@@ -485,6 +489,7 @@
             }
             ctx.closePath();
             
+            // 鮮豔的填充與邊框
             ctx.fillStyle = '#FFFF00'; 
             ctx.fill();
             ctx.shadowBlur = 0; 
@@ -492,8 +497,10 @@
             ctx.strokeStyle = '#FF8C00'; 
             ctx.stroke();
             
+            // 4. 星星中間的光點
             ctx.beginPath(); ctx.arc(0,0, 12, 0, Math.PI*2); ctx.fillStyle="#fff"; ctx.fill();
 
+            // 5. 動態環繞小光點
             const time = Date.now() / 300;
             for(let j=0; j<3; j++) {
                 const angle = time + (j * (Math.PI * 2 / 3));
