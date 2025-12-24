@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Phonics Flying: 台灣兒童美語協會製作</title>
+    <title>Phonics Flying: Ace English x 翊華教育</title>
     <style>
-        /* 引入可愛圓潤的字體 */
         @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&display=swap');
 
         body {
             margin: 0;
-            /* 可愛卡通天空背景 */
             background-color: #AEEEEE;
             background-image: 
                 radial-gradient(circle at 10% 20%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 20%),
@@ -36,10 +34,9 @@
             display: flex; flex-direction: column; align-items: center; justify-content: space-between;
         }
         
-        /* 糖果風格分數欄 */
         .hud-bar {
             margin-top: 20px;
-            background: linear-gradient(to bottom, #FFD1DC, #FFB6C1); /* 粉嫩漸層 */
+            background: linear-gradient(to bottom, #FFD1DC, #FFB6C1);
             padding: 12px 40px;
             border-radius: 60px;
             border: 5px solid #fff;
@@ -50,7 +47,6 @@
             z-index: 10;
         }
 
-        /* 遊戲中底部的製作單位文字 */
         .footer-credit {
             margin-bottom: 20px; font-size: 22px; color: #FF6B81; font-weight: 700;
             background: rgba(255,255,255,0.9); padding: 10px 30px; border-radius: 30px;
@@ -68,7 +64,6 @@
         .speaking { animation: wobble-speaker 0.5s infinite alternate; }
         @keyframes wobble-speaker { from { transform: translate(-50%, -50%) rotate(-5deg) scale(1.1); } to { transform: translate(-50%, -50%) rotate(5deg) scale(1.3); } }
 
-        /* 開始畫面 - 可愛風 */
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255, 255, 255, 0.9);
@@ -83,16 +78,19 @@
             font-weight: 900;
         }
 
-        /* 製作單位標題樣式 */
         .producer-title {
-            font-size: 28px; color: #fff; margin-bottom: 30px; font-weight: bold;
+            font-size: 28px; color: #fff; margin-bottom: 10px; font-weight: bold;
             background: #87CEEB; padding: 10px 40px; border-radius: 50px;
             border: 4px solid #fff; box-shadow: 0 5px 0 rgba(0,0,0,0.1);
             text-align: center;
             letter-spacing: 1px;
         }
 
-        /* 棉花糖按鈕 */
+        .sub-producer-title {
+            font-size: 20px; color: #888; margin-bottom: 30px;
+            font-weight: 700; letter-spacing: 2px;
+        }
+
         button {
             margin-top: 20px; padding: 20px 70px; font-size: 32px; font-family: 'Fredoka', sans-serif; font-weight: 900;
             background: linear-gradient(to bottom, #AEEEEE, #87CEEB);
@@ -122,7 +120,10 @@
         <h1>Phonics Adventure</h1>
         
         <div class="producer-title">
-            台灣兒童美語協會製作
+            Ace English
+        </div>
+        <div class="sub-producer-title">
+            翊華教育AI數位教材
         </div>
 
         <div style="margin: 15px; background: #fff; padding: 20px; border-radius: 30px; border: 4px solid #FFB6C1; color: #666; font-size: 20px; font-weight: 600;">
@@ -158,33 +159,23 @@
         let streak = 0;
         let audioCtx;
 
-        // --- 📚 Minimal Pairs 完整題庫 ---
         const wordPairs = [
-            // 🟢 短母音 vs 短母音
             ["Bit", "Bet"], ["Bit", "Bat"], ["Bet", "Bat"], 
             ["Sit", "Set"], ["Sit", "Sat"], 
             ["Pen", "Pan"], ["Men", "Man"], ["Pin", "Pen"],
             ["Bed", "Bad"], ["Lip", "Lap"],
-
-            // 🔵 短母音 vs 短母音（不同高度）
             ["Cut", "Cat"], ["Cup", "Cap"], 
             ["Luck", "Lock"], ["Look", "Lock"], 
             ["Bus", "Boss"], ["Duck", "Dock"], 
             ["Full", "Fool"], ["Pull", "Pool"], ["Foot", "Food"],
             ["Ship", "Sheep"], 
-
-            // 🟡 短母音 vs 長母音
             ["Bit", "Beat"], ["Sit", "Seat"], ["Hit", "Heat"], 
             ["Fill", "Feel"], ["Bin", "Bean"], 
             ["Hat", "Hate"], ["Cap", "Cape"], ["Mat", "Mate"], 
             ["Pet", "Pete"], ["Not", "Note"],
-
-            // 🟠 長母音對比
             ["Beat", "Bait"], ["Pool", "Pole"], ["Boot", "Boat"], 
             ["Feel", "Fall"], ["Leak", "Lake"], ["Cheap", "Chip"], 
             ["Beet", "Bit"],
-
-            // 🔴 雙母音／其他母音對比
             ["Cot", "Caught"], ["Hat", "Hot"], 
             ["Pan", "Pain"], ["Men", "Main"], ["Sell", "Sail"], 
             ["Pull", "Pill"], ["Full", "Fall"], 
@@ -225,45 +216,38 @@
             if (audioCtx.state === 'suspended') audioCtx.resume();
         }
 
-        // 金幣音效
         function playCoinSound() {
             if (!audioCtx) return;
             const t = audioCtx.currentTime;
-            
             const osc1 = audioCtx.createOscillator(); 
             const gain1 = audioCtx.createGain();
             osc1.connect(gain1); gain1.connect(audioCtx.destination);
-            osc1.type = 'sine'; osc1.frequency.setValueAtTime(1396.91, t); // F6
+            osc1.type = 'sine'; osc1.frequency.setValueAtTime(1396.91, t); 
             gain1.gain.setValueAtTime(0.1, t); gain1.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
             osc1.start(t); osc1.stop(t + 0.3);
 
             const osc2 = audioCtx.createOscillator(); 
             const gain2 = audioCtx.createGain();
             osc2.connect(gain2); gain2.connect(audioCtx.destination);
-            osc2.type = 'sine'; osc2.frequency.setValueAtTime(1760, t + 0.1); // A6
+            osc2.type = 'sine'; osc2.frequency.setValueAtTime(1760, t + 0.1); 
             gain2.gain.setValueAtTime(0.1, t + 0.1); gain2.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
             osc2.start(t + 0.1); osc2.stop(t + 0.5);
         }
 
-        // 溫柔的錯誤提示音
         function playTryAgainSound() {
             if (!audioCtx) return;
             const t = audioCtx.currentTime;
             const osc = audioCtx.createOscillator(); 
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
-            
             osc.type = 'triangle'; 
-            osc.frequency.setValueAtTime(330, t); // E4
-            osc.frequency.linearRampToValueAtTime(196, t + 0.4); // G3
-            
+            osc.frequency.setValueAtTime(330, t); 
+            osc.frequency.linearRampToValueAtTime(196, t + 0.4); 
             gain.gain.setValueAtTime(0.1, t); 
             gain.gain.linearRampToValueAtTime(0, t + 0.4);
-            
             osc.start(t); osc.stop(t + 0.4);
         }
 
-        // --- 🍬 繽紛糖果粒子 ---
         let particles = [];
         const particleColors = ['#FF6B81', '#FFD1DC', '#AEEEEE', '#FFFF99', '#B4F8C8'];
         class Particle {
@@ -280,7 +264,7 @@
             }
             update() {
                 this.x += this.vx; this.y += this.vy;
-                this.vy += 0.25; // 重力
+                this.vy += 0.25; 
                 this.life -= this.decay;
                 this.size *= 0.96;
             }
@@ -298,20 +282,22 @@
             }
         }
 
-        // --- 🍮 Q彈果凍氣泡 ---
         class FlyingBubble {
             constructor(text, startX, colorTheme) {
                 this.text = text;
                 this.radius = 95; 
                 this.x = startX;
-                // 初始位置貼近螢幕上方
-                this.y = -this.radius; 
+                // [修改] 初始位置：稍微露出頂端 (radius 的 20%)，避免一開始完全看不見
+                this.y = -this.radius * 0.8; 
                 
                 this.mainColor = colorTheme === 'blue' ? '#87CEEB' : '#FFB6C1'; 
                 this.highlightColor = colorTheme === 'blue' ? '#AEEEEE' : '#FFD1DC';
                 
-                // 下落速度 (配合 6秒 降落)
-                this.vy = Math.random() * 0.5 + 2.0; 
+                // [修改] 速度計算：確保大約 6 秒 (360 frames) 到達底部
+                // 距離 = height + radius
+                const framesToFall = 360; // 60fps * 6s
+                const distance = height + this.radius * 1.5;
+                this.vy = distance / framesToFall; 
                 
                 this.vx = (Math.random() - 0.5) * 0.8; 
                 this.pulse = Math.random() * Math.PI;
@@ -363,11 +349,12 @@
 
                 ctx.restore();
             }
-            isOffScreen() { return this.y > height + this.radius + 50; }
+            // 檢查是否掉到底部 (接近底部就算)
+            checkBottom() { return this.y > height - this.radius - 50; }
         }
 
         let bubbles = [];
-        let questionTimer = null;
+        let questionTimer = null; // 用於重置標記
 
         function startNewQuestion() {
             if (!gameActive) return;
@@ -379,31 +366,42 @@
             bubbles.push(new FlyingBubble(pair[1], width * 0.7, 'pink'));
             setTimeout(() => { speakWord(currentTargetWord); }, 800);
             
-            clearTimeout(questionTimer);
-            // 7秒等待時間 (配合氣泡降落速度)
-            questionTimer = setTimeout(checkMissed, 7000); 
+            // 這裡不再使用 setTimeout 來判斷 Missed，而是交給 renderLoop 的位置判定
         }
 
+        let isSwitching = false; // 防止重複觸發切換
+
         function checkMissed() {
-            if (bubbles.length > 0 && gameActive) {
+            if (gameActive && !isSwitching) {
+                isSwitching = true;
                 streak = 0; updateUI();
                 showFeedback("Try Again!", width/2, height/2, '#aaa');
                 playTryAgainSound();
-                bubbles = []; setTimeout(startNewQuestion, 1500);
+                setTimeout(() => { 
+                    bubbles = []; 
+                    isSwitching = false;
+                    startNewQuestion(); 
+                }, 1500);
             }
         }
 
         function handleHit(bubble, handX, handY) {
-            if (!canAnswer || bubble.isHit) return;
+            if (!canAnswer || bubble.isHit || isSwitching) return;
             bubble.isHit = true; 
+            
             if (bubble.text === currentTargetWord) {
                 createExplosion(handX, handY); 
                 score += 10; streak++;
                 playCoinSound(); 
                 const praise = correctPraises[Math.floor(Math.random() * correctPraises.length)];
                 showFeedback(praise, handX, handY, '#FFD700'); 
-                clearTimeout(questionTimer);
-                setTimeout(() => { bubbles = []; setTimeout(startNewQuestion, 1000); }, 500);
+                
+                isSwitching = true;
+                setTimeout(() => { 
+                    bubbles = []; 
+                    isSwitching = false;
+                    startNewQuestion(); 
+                }, 1000);
             } else {
                 createExplosion(handX, handY);
                 streak = 0;
@@ -430,11 +428,25 @@
 
         function renderLoop() {
             ctx.clearRect(0, 0, width, height);
+            
+            let anyBubbleReachedBottom = false;
+
             for (let i = bubbles.length - 1; i >= 0; i--) {
-                const b = bubbles[i]; b.update(); b.draw();
-                if (b.isOffScreen() && !b.isHit) bubbles.splice(i, 1);
+                const b = bubbles[i]; 
+                b.update(); 
+                b.draw();
+                
+                // [修改] 檢查是否觸底
+                if (b.checkBottom() && !b.isHit) {
+                    anyBubbleReachedBottom = true;
+                }
             }
-            if (bubbles.length === 0 && canAnswer && gameActive) { clearTimeout(questionTimer); checkMissed(); }
+
+            // 如果氣泡觸底且尚未作答，觸發 Missed
+            if (anyBubbleReachedBottom && !isSwitching && gameActive) {
+                checkMissed();
+            }
+
             particles.forEach((p, idx) => { p.update(); p.draw(); if (p.life <= 0) particles.splice(idx, 1); });
 
             if (feedbackText) {
@@ -455,53 +467,30 @@
             }
         }
 
-        // --- 🌟 顯眼加大版魔法棒 ---
         function drawMagicWand(x, y) {
             ctx.save();
             ctx.translate(x, y);
-
-            // 強烈發光
-            ctx.shadowBlur = 35;
-            ctx.shadowColor = '#FFD700'; 
-            
-            // 棒身 (加粗加長)
+            ctx.shadowBlur = 35; ctx.shadowColor = '#FFD700'; 
             ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(35, 35);
-            ctx.lineWidth = 14; 
-            ctx.strokeStyle = '#FF6B81'; 
-            ctx.lineCap = 'round'; 
-            ctx.stroke();
-
-            // 星星 (加大)
+            ctx.lineWidth = 14; ctx.strokeStyle = '#FF6B81'; ctx.lineCap = 'round'; ctx.stroke();
             ctx.beginPath();
-            const outerRadius = 45; 
-            const innerRadius = 22; 
+            const outerRadius = 45; const innerRadius = 22; 
             for (let i = 0; i < 5; i++) {
                 ctx.lineTo(Math.cos((18 + i * 72) * Math.PI / 180) * outerRadius, Math.sin((18 + i * 72) * Math.PI / 180) * outerRadius);
                 ctx.lineTo(Math.cos((54 + i * 72) * Math.PI / 180) * innerRadius, Math.sin((54 + i * 72) * Math.PI / 180) * innerRadius);
             }
             ctx.closePath();
-            
-            ctx.fillStyle = '#FFFF00'; 
-            ctx.fill();
-            ctx.shadowBlur = 0; 
-            ctx.lineWidth = 6; 
-            ctx.strokeStyle = '#FF8C00'; 
-            ctx.stroke();
-            
+            ctx.fillStyle = '#FFFF00'; ctx.fill();
+            ctx.shadowBlur = 0; ctx.lineWidth = 6; ctx.strokeStyle = '#FF8C00'; ctx.stroke();
             ctx.beginPath(); ctx.arc(0,0, 12, 0, Math.PI*2); ctx.fillStyle="#fff"; ctx.fill();
-
-            // 動態閃爍光點
             const time = Date.now() / 300;
             for(let j=0; j<3; j++) {
                 const angle = time + (j * (Math.PI * 2 / 3));
                 const rx = Math.cos(angle) * 35;
                 const ry = Math.sin(angle) * 35;
-                ctx.beginPath();
-                ctx.arc(rx, ry, 6, 0, Math.PI*2);
-                ctx.fillStyle = `rgba(255, 255, 255, ${0.5 + Math.sin(time*2)*0.5})`; 
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(rx, ry, 6, 0, Math.PI*2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${0.5 + Math.sin(time*2)*0.5})`; ctx.fill();
             }
-
             ctx.restore();
         }
 
@@ -512,15 +501,12 @@
                 for (const landmarks of results.multiHandLandmarks) {
                     const indexTip = landmarks[8]; 
                     const x = indexTip.x * width; const y = indexTip.y * height;
-                    
                     drawMagicWand(x, y);
-
                     if (canAnswer) {
                         bubbles.forEach(b => {
                             if (b.isHit) return;
                             const dx = x - b.x; const dy = y - b.y;
                             const dist = Math.sqrt(dx*dx + dy*dy);
-                            // 判定範圍加大至 radius + 40 (因為魔法棒變大了)
                             if (dist < b.radius + 40) handleHit(b, x, y);
                         });
                     }
